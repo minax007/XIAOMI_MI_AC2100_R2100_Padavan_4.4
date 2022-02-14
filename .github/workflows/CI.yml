@@ -11,7 +11,7 @@ on:
   
 env:
   src_git: https://github.com/MeIsReallyBa/padavan-4.4.git
-  build_dir: /opt/rt-n56u
+  build_dir: /opt/padavan-4.4
   images_dir: /opt/images
   ENABLED_CFG: |
     CONFIG_FIRMWARE_INCLUDE_LANG_UK
