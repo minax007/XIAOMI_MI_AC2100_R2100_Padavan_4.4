@@ -1,0 +1,196 @@
+name: Build Padavan
+
+# Controls when the action will run. 
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  
+env:
+  src_git: https://github.com/MeIsReallyBa/padavan-4.4.git
+  build_dir: /opt/rt-n56u
+  images_dir: /opt/images
+  ENABLED_CFG: |
+    CONFIG_FIRMWARE_INCLUDE_LANG_UK
+  DISABLED_CFG: |
+    CONFIG_FIRMWARE_CPU_900MHZ
+    CONFIG_FIRMWARE_CPU_SLEEP
+    CONFIG_FIRMWARE_ENABLE_USB
+    CONFIG_FIRMWARE_ENABLE_UFSD
+    CONFIG_FIRMWARE_ENABLE_FAT
+    CONFIG_FIRMWARE_ENABLE_EXFAT
+    CONFIG_FIRMWARE_ENABLE_EXT2
+    CONFIG_FIRMWARE_ENABLE_EXT3
+    CONFIG_FIRMWARE_ENABLE_EXT4
+    CONFIG_FIRMWARE_ENABLE_XFS
+    CONFIG_FIRMWARE_ENABLE_FUSE
+    CONFIG_FIRMWARE_ENABLE_SWAP
+    CONFIG_FIRMWARE_INCLUDE_UVC
+    CONFIG_FIRMWARE_INCLUDE_HID
+    CONFIG_FIRMWARE_INCLUDE_SERIAL
+    CONFIG_FIRMWARE_INCLUDE_AUDIO
+    CONFIG_FIRMWARE_INCLUDE_XFRM
+    CONFIG_FIRMWARE_INCLUDE_QOS
+    CONFIG_FIRMWARE_INCLUDE_IMQ
+    CONFIG_FIRMWARE_INCLUDE_IFB
+    CONFIG_FIRMWARE_INCLUDE_IPSET
+    CONFIG_FIRMWARE_INCLUDE_NFSD
+    CONFIG_FIRMWARE_INCLUDE_NFSC
+    CONFIG_FIRMWARE_INCLUDE_CIFS
+    CONFIG_FIRMWARE_INCLUDE_LANG_CN
+    CONFIG_FIRMWARE_INCLUDE_LANG_BR
+    CONFIG_FIRMWARE_INCLUDE_LANG_CZ
+    CONFIG_FIRMWARE_INCLUDE_LANG_DA
+    CONFIG_FIRMWARE_INCLUDE_LANG_DE
+    CONFIG_FIRMWARE_INCLUDE_LANG_ES
+    CONFIG_FIRMWARE_INCLUDE_LANG_FI
+    CONFIG_FIRMWARE_INCLUDE_LANG_FR
+    CONFIG_FIRMWARE_INCLUDE_LANG_NO
+    CONFIG_FIRMWARE_INCLUDE_LANG_PL
+    CONFIG_FIRMWARE_INCLUDE_LANG_RU
+    CONFIG_FIRMWARE_INCLUDE_LANG_SV
+    CONFIG_FIRMWARE_INCLUDE_NTFS_3G
+    CONFIG_FIRMWARE_INCLUDE_LPRD
+    CONFIG_FIRMWARE_INCLUDE_U2EC
+    CONFIG_FIRMWARE_INCLUDE_TCPDUMP
+    CONFIG_FIRMWARE_INCLUDE_HDPARM
+    CONFIG_FIRMWARE_INCLUDE_PARTED
+    CONFIG_FIRMWARE_INCLUDE_SMBD
+    CONFIG_FIRMWARE_INCLUDE_SMBD36
+    CONFIG_FIRMWARE_INCLUDE_WINS
+    CONFIG_FIRMWARE_INCLUDE_SMBD_SYSLOG
+    CONFIG_FIRMWARE_INCLUDE_FTPD
+    CONFIG_FIRMWARE_INCLUDE_RPL2TP
+    CONFIG_FIRMWARE_INCLUDE_EAP_PEAP
+    CONFIG_FIRMWARE_INCLUDE_HTTPS
+    CONFIG_FIRMWARE_INCLUDE_SFTP
+    CONFIG_FIRMWARE_INCLUDE_DROPBEAR
+    CONFIG_FIRMWARE_INCLUDE_DROPBEAR_FAST_CODE
+    CONFIG_FIRMWARE_INCLUDE_OPENSSH
+    CONFIG_FIRMWARE_INCLUDE_OPENVPN
+    CONFIG_FIRMWARE_INCLUDE_SSWAN
+    CONFIG_FIRMWARE_INCLUDE_OPENSSL_EC
+    CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE
+    CONFIG_FIRMWARE_INCLUDE_XUPNPD
+    CONFIG_FIRMWARE_INCLUDE_MINIDLNA
+    CONFIG_FIRMWARE_INCLUDE_FIREFLY
+    CONFIG_FIRMWARE_INCLUDE_FFMPEG_NEW
+    CONFIG_FIRMWARE_INCLUDE_TRANSMISSION
+    CONFIG_FIRMWARE_INCLUDE_TRANSMISSION_WEB_CONTROL
+    CONFIG_FIRMWARE_INCLUDE_ARIA
+    CONFIG_FIRMWARE_INCLUDE_ARIA_WEB_CONTROL
+    CONFIG_FIRMWARE_INCLUDE_CURL
+    CONFIG_FIRMWARE_INCLUDE_SCUTCLIENT
+    CONFIG_FIRMWARE_INCLUDE_GDUT_DRCOM
+    CONFIG_FIRMWARE_INCLUDE_DOGCOM
+    CONFIG_FIRMWARE_INCLUDE_MINIEAP
+    CONFIG_FIRMWARE_INCLUDE_NJIT_CLIENT
+    CONFIG_FIRMWARE_INCLUDE_NAPT66
+    CONFIG_FIRMWARE_INCLUDE_SOFTETHERVPN_SERVER
+    CONFIG_FIRMWARE_INCLUDE_SOFTETHERVPN_CLIENT
+    CONFIG_FIRMWARE_INCLUDE_SOFTETHERVPN_CMD
+    CONFIG_FIRMWARE_INCLUDE_VLMCSD
+    CONFIG_FIRMWARE_INCLUDE_TTYD
+    CONFIG_FIRMWARE_INCLUDE_LRZSZ
+    CONFIG_FIRMWARE_INCLUDE_HTOP
+    CONFIG_FIRMWARE_INCLUDE_NANO
+    CONFIG_FIRMWARE_INCLUDE_IPERF3
+    CONFIG_FIRMWARE_INCLUDE_DUMP1090
+    CONFIG_FIRMWARE_INCLUDE_RTL_SDR
+    CONFIG_FIRMWARE_INCLUDE_MTR
+    CONFIG_FIRMWARE_INCLUDE_SOCAT
+    CONFIG_FIRMWARE_INCLUDE_SRELAY
+    CONFIG_FIRMWARE_INCLUDE_MENTOHUST
+    CONFIG_FIRMWARE_INCLUDE_FRPC
+    CONFIG_FIRMWARE_INCLUDE_FRPS
+    CONFIG_FIRMWARE_INCLUDE_TUNSAFE
+    CONFIG_FIRMWARE_INCLUDE_WIREGUARD
+    CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS
+    CONFIG_FIRMWARE_INCLUDE_SSSERVER
+    CONFIG_FIRMWARE_INCLUDE_DNSFORWARDER
+    CONFIG_FIRMWARE_INCLUDE_SMBD36
+    CONFIG_FIRMWARE_INCLUDE_3PROXY
+    CONFIG_FIRMWARE_INCLUDE_SMARTDNS
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-20.04
+    env:
+      build_variant: ${{ matrix.build_variant }}
+      targets: ${{ matrix.targets }}
+    strategy:
+      matrix:
+        include:
+          - build_variant: "mt7621"
+            targets: "R2100"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare environment
+        run: |
+          sudo apt update
+          sudo apt install libtool-bin gperf python3-docutils autopoint gettext zip
+          mkdir -p $images_dir
+      - name: Clone source
+        run: |
+          git clone --depth=1 $src_git $build_dir
+          cd $build_dir
+          GIT_VERSION="$(git rev-parse --short=7 HEAD 2>/dev/null)"
+          build_date="$(date +%Y%m%d)"
+          echo "build_date=${build_date}" >> $GITHUB_ENV
+          echo "build_version=${GIT_VERSION}" >> $GITHUB_ENV
+          echo "image_suffix=${GIT_VERSION}_${build_date}" >> $GITHUB_ENV
+          echo "image_name=images_${build_variant}_${GIT_VERSION}" >> $GITHUB_ENV
+      - name: Run shellcheck
+        run: |
+          cd $build_dir
+          if [ -f ./trunk/tools/shellcheck.sh ]; then sh ./trunk/tools/shellcheck.sh; fi
+      - name: Prepare toolchain
+        run: |
+          cd $build_dir/toolchain-mipsel
+          sh dl_toolchain.sh
+      - name: Modify configs
+        run: |
+          cd $build_dir/trunk/configs/templates
+          for m in $targets; do if [ -f $m.config ]; then \
+          for n in $ENABLED_CFG; do sed -i "/${n}/c${n}=y" $m.config; done; \
+          for n in $DISABLED_CFG; do sed -i "/${n}/c${n}=n" $m.config; done; \
+          fi; done
+          
+      # Create Release was put before "Start Build" to avoid building already existing build      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.build_version }}
+          release_name: Padavan (${{ env.build_version }})
+          body: |
+            Build Date: ${{ env.build_date }} 
+            Build Version: ${{ env.build_version }} 
+
+          draft: false
+          prerelease: false
+          
+      - name: Start build
+        run: |
+          cd $build_dir/trunk
+          for m in $targets; do fakeroot ./build_firmware_ci $m; \
+          if [ $? = 0 ]; then cp -f images/*.trx $images_dir/$m.trx; else exit 1; fi; \
+          ./clear_tree_simple >/dev/null 2>&1; done
+
+      - name: Upload R2100
+        id: upload-release-asset-R2100
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: /opt/images/R2100_4.4.trx
+          asset_name: R2100_${{ env.build_date }}_${{ env.build_version }}_4.4.trx
+          asset_content_type: application/bin
