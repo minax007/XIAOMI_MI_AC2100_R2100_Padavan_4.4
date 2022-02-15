@@ -11,7 +11,7 @@ on:
   
 env:
   src_git: https://github.com/MeIsReallyBa/padavan-4.4.git
-  build_dir: /opt/padavan-4.4
+  build_dir: /opt/rt-n56u
   images_dir: /opt/images
   ENABLED_CFG: |
     CONFIG_FIRMWARE_INCLUDE_LANG_UK
@@ -191,6 +191,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /opt/images/R2100_4.4.trx
-          asset_name: R2100_${{ env.build_date }}_${{ env.build_version }}_4.4.trx
+          asset_path: /opt/images/R2100.trx
+          asset_name: R2100_${{ env.build_date }}_${{ env.build_version }}.trx
           asset_content_type: application/bin
