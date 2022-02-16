@@ -2,8 +2,8 @@ name: Build Padavan
 
 # Controls when the action will run. 
 on:
-  schedule:
-    - cron: "0 2 * * *"
+#  schedule:
+#    - cron: "0 2 * * *"
   push:
     branches:
       - master
