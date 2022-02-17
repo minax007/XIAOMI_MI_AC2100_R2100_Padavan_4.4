@@ -11,10 +11,7 @@ on:
   
 env:
   src_git: https://github.com/MeIsReallyBa/padavan-4.4.git
-  build_dir: /opt/rt-n56u
-  
-  config_dir: /opt/rt-n56u/trunk/configs/templates      
-  
+  build_dir: /opt/rt-n56u  
   images_dir: /opt/images
   ENABLED_CFG: |
     CONFIG_FIRMWARE_INCLUDE_LANG_UK
@@ -163,46 +160,6 @@ jobs:
           for n in $ENABLED_CFG; do sed -i "/${n}/c${n}=y" $m.config; done; \
           for n in $DISABLED_CFG; do sed -i "/${n}/c${n}=n" $m.config; done; \
           fi; done
-
-          cd $config_dir
-          for m in $targets; do if [ -f $m.config ]; then \
-          ##科学上网##
-          echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=n" >> $m.config #科学上网插件，选择n后全部有关插件都不集成
-          echo "CONFIG_FIRMWARE_INCLUDE_XRAY=n" >> $m.config #集成xray执行文件  ~4.5M
-          echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> $m.config #集成v2ray执行文件
-          echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=n" >> $m.config #集成trojan执行文件  ~1.2M
-          echo "CONFIG_FIRMWARE_INCLUDE_SSOBFS=n" >> $m.config #simple-obfs混淆插件
-          ##广告管理##
-          echo "CONFIG_FIRMWARE_INCLUDE_ADBYBY=n" >> $m.config #adbyby plus+
-          ##DNS服务##
-          echo "CONFIG_FIRMWARE_INCLUDE_SMARTDNS=n" >> $m.config #smartdns
-          echo "CONFIG_FIRMWARE_INCLUDE_ADGUARDHOME=n" >> $m.config #adg DNS去AD
-          ##内网穿透服务##
-          echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=n" >> $m.config #zerotier ~1.3M
-          echo "CONFIG_FIRMWARE_INCLUDE_ALIDDNS=n" >> $m.config #aliddns
-          echo "CONFIG_FIRMWARE_INCLUDE_DDNSTO=n" >> $m.config #ddnsto  ~0.5M
-          echo "CONFIG_FIRMWARE_INCLUDE_ALDRIVER=n" >> $m.config  #ALDRIVER  ~3m
-          echo "CONFIG_FIRMWARE_INCLUDE_MENTOHUST=n" >> $m.config #mentohust
-          echo "CONFIG_FIRMWARE_INCLUDE_SQM=n" >> $m.config #SQM
-          echo "CONFIG_FIRMWARE_INCLUDE_WIREGUARD=n" >>.config #wireguard 10k
-          #CPU超频
-          echo "CONFIG_FIRMWARE_INCLUDE_OC=n" >> $m.config #CPU超频开关
-          echo 'CONFIG_FIRMWARE_MT7621_OC="0x312"' >> $m.config #此处填写对应频率的十六进制：1000Mhz=0x312 1100Mhz=0x362 1120Mhz=0x372 1200Mhz=0x3B2
-          for MOD in UFSD FAT EXFAT EXT2 EXT3 EXT4 XFS FUSE SWAP; do
-              sed -i "s/CONFIG_FIRMWARE_ENABLE_${MOD}=y/CONFIG_FIRMWARE_ENABLE_${MOD}=n/" $m.config; done; \
-          for MOD in UVC SERIAL AUDIO LPRD U2EC HDPARM PARTED SMBD FTPD ARIA ARIA_WEB_CONTROL DUMP1090 RTL_SDR HID XFRM QOS IMQ IFB IPSET NFSD NFSC CIFS NTFS_3G TCPDUMP SMBD36 WINS SMBD_SYSLOG RPL2TP EAP_PEAP HTTPS SFTP DROPBEAR DROPBEAR_FAST_CODE OPENSSH OPENVPN SSWAN OPENSSL_EC OPENSSL_EXE XUPNPD MINIDLNA FIREFLY FFMPEG_NEW TRANSMISSION TRANSMISSION_WEB_CONTROL CURL GDUT_DRCOM DOGCOM MINIEAP NJIT_CLIENT NAPT66 SOFTETHERVPN_SERVER SOFTETHERVPN_CLIENT SOFTETHERVPN_CMD VLMCSD TTYD LRZSZ HTOP NANO IPERF3 MTR SOCAT SRELAY MENTOHUST SCUTCLIENT FRPC FRPS TUNSAFE WIREGUARD SHADOWSOCKS XRAY V2RAY TROJAN SSOBFS ADBYBY KOOLPROXY SMARTDNS SMARTDNSBIN ADGUARDHOME CADDY CADDYBIN WYY WYYBIN ZEROTIER ALIDDNS DDNSTO ALDRIVER MENTOHUST SQM DNSFORWARDER CLOUDFLAREDDNS NVPPROXY DDNS_SSL SSSERVER NPC KUMASOCKS IPT2SOCKS MICROSOCKS; do
-              sed -i "s/CONFIG_FIRMWARE_INCLUDE_${MOD}=y/CONFIG_FIRMWARE_INCLUDE_${MOD}=n/" $m.config; done; \
-          fi; done
-          cd $work_dir
-          for m in $targets; do if [ -f $m.config ]; then echo "拷贝 $m.config"; cp -f ./$m.config $config_dir/$m.config; fi; done; \
-          for m in $targets; do if [ -f public.sh ]; then echo "执行 public.sh"; sh ./public.sh; fi; if [ -f $m.sh ]; then echo "执行 $m.sh"; sh ./$m.sh; fi; done; \
-
-
-
-
-
-
-
 
       # Create Release was put before "Start Build" to avoid building already existing build      
       - name: Create Release
