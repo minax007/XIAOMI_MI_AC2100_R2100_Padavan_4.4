@@ -15,8 +15,8 @@ env:
   images_dir: /opt/images
   ENABLED_CFG: |
     CONFIG_FIRMWARE_INCLUDE_LANG_UK
-    CONFIG_FIRMWARE_INCLUDE_IPSET
   DISABLED_CFG: |
+    CONFIG_FIRMWARE_INCLUDE_IPSET
     CONFIG_FIRMWARE_CPU_900MHZ
     CONFIG_FIRMWARE_CPU_SLEEP
     CONFIG_FIRMWARE_ENABLE_USB
@@ -155,6 +155,7 @@ jobs:
           sh dl_toolchain.sh
       - name: Modify configs
         run: |
+          if [ -d meIsreallyba/modify ]; then cp -rf meIsreallyba/modify/* $build_dir/trunk/; fi
           cd $build_dir/trunk/configs/templates
           for m in $targets; do if [ -f $m.config ]; then \
           for n in $ENABLED_CFG; do sed -i "/${n}/c${n}=y" $m.config; done; \
