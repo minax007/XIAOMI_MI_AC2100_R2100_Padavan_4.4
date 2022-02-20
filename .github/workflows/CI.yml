@@ -114,6 +114,7 @@ env:
     CONFIG_FIRMWARE_INCLUDE_SMBD36
     CONFIG_FIRMWARE_INCLUDE_3PROXY
     CONFIG_FIRMWARE_INCLUDE_SMARTDNS
+    CONFIG_FIRMWARE_INCLUDE_WIREGUARD
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -155,6 +156,7 @@ jobs:
           sh dl_toolchain.sh
       - name: Modify configs
         run: |
+          if [ -d meIsreallyba/modify ]; then cp -rf meIsreallyba/modify/* $build_dir/trunk/; fi
           cd $build_dir/trunk/configs/templates
           for m in $targets; do if [ -f $m.config ]; then \
           for n in $ENABLED_CFG; do sed -i "/${n}/c${n}=y" $m.config; done; \
