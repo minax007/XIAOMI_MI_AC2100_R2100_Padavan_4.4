@@ -114,6 +114,7 @@ env:
     CONFIG_FIRMWARE_INCLUDE_SMBD36
     CONFIG_FIRMWARE_INCLUDE_3PROXY
     CONFIG_FIRMWARE_INCLUDE_SMARTDNS
+    CONFIG_FIRMWARE_INCLUDE_WIREGUARD
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
